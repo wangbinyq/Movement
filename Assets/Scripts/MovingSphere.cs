@@ -9,6 +9,10 @@ public class MovingSphere : MonoBehaviour
     int maxAirJumps = 0;
     [SerializeField, Range(0, 90)]
     float maxGroundAngle = 40f;
+    [SerializeField, Min(0f)]
+    float probeDistance = 1f;
+    [SerializeField]
+    LayerMask probeMask = -1;
 
 
     Vector3 velocity, desiredVelocity;
@@ -160,7 +164,7 @@ public class MovingSphere : MonoBehaviour
             return false;
         }
 
-        if (!Physics.Raycast(body.position, Vector3.down, out var hit))
+        if (!Physics.Raycast(body.position, Vector3.down, out var hit, probeDistance, probeMask))
         {
             return false;
         }
