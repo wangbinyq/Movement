@@ -4,7 +4,7 @@ using UnityEngine;
 public class MovingSphere : MonoBehaviour
 {
     [SerializeField, Range(0, 100)]
-    float maxSpeed = 10, maxAcceleration = 10, jumpHeight = 2;
+    float maxSpeed = 10, maxAcceleration = 10, jumpHeight = 2, maxAirAcceleration = 1f;
     [SerializeField, Range(0, 5)]
     int maxAirJumps = 0;
 
@@ -34,7 +34,8 @@ public class MovingSphere : MonoBehaviour
     void FixedUpdate()
     {
         UpdateState();
-        var maxSpeedChange = maxAcceleration * Time.fixedDeltaTime;
+        float acceleration = onGround ? maxAcceleration : maxAirAcceleration;
+        var maxSpeedChange = acceleration * Time.fixedDeltaTime;
         velocity.x = Mathf.MoveTowards(velocity.x, desiredVelocity.x, maxSpeedChange);
         velocity.z = Mathf.MoveTowards(velocity.z, desiredVelocity.z, maxSpeedChange);
 
