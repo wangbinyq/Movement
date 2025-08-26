@@ -13,7 +13,8 @@ public class MovingSphere : MonoBehaviour
 
     Vector3 velocity, desiredVelocity;
     bool desiredJump;
-    bool onGround;
+    int groundContactCount;
+    bool OnGround => groundContactCount > 0;
     int jumpPhase;
     float minGroundDotProduct;
     Vector3 contactNormal;
@@ -60,10 +61,13 @@ public class MovingSphere : MonoBehaviour
     void UpdateState()
     {
         velocity = body.linearVelocity;
-        if (onGround)
+        if (OnGround)
         {
             jumpPhase = 0;
-            contactNormal.Normalize();
+            if (groundContactCount > 1)
+            {
+                contactNormal.Normalize();
+            }
         }
         else
         {
@@ -73,13 +77,13 @@ public class MovingSphere : MonoBehaviour
 
     void ClearState()
     {
-        onGround = false;
+        groundContactCount = 0;
         contactNormal = Vector3.zero;
     }
 
     void Jump()
     {
-        if (onGround || jumpPhase < maxAirJumps)
+        if (OnGround || jumpPhase < maxAirJumps)
         {
             jumpPhase += 1;
             float jumpSpeed = Mathf.Sqrt(-2f * Physics.gravity.y * jumpHeight);
@@ -110,7 +114,7 @@ public class MovingSphere : MonoBehaviour
             var normal = collision.GetContact(i).normal;
             if (normal.y >= minGroundDotProduct)
             {
-                onGround = true;
+                groundContactCount += 1;
                 contactNormal += normal;
             }
         }
@@ -129,7 +133,7 @@ public class MovingSphere : MonoBehaviour
         var currentX = Vector3.Dot(velocity, xAxis);
         var currentZ = Vector3.Dot(velocity, zAxis);
 
-        var acceleration = onGround ? maxAcceleration : maxAirAcceleration;
+        var acceleration = OnGround ? maxAcceleration : maxAirAcceleration;
         var maxSpeedChange = acceleration * Time.deltaTime;
         var newX = Mathf.MoveTowards(currentX, desiredVelocity.x, maxSpeedChange);
         var newZ = Mathf.MoveTowards(currentZ, desiredVelocity.z, maxSpeedChange);
