@@ -4,11 +4,11 @@ using UnityEngine;
 public class MovingSphere : MonoBehaviour
 {
     [SerializeField, Range(0, 100)]
-    float maxSpeed = 10, maxAcceleration = 10, jumpHeight = 2, maxAirAcceleration = 1f;
+    float maxSpeed = 10, maxAcceleration = 10, jumpHeight = 2, maxAirAcceleration = 1f, maxSnapSpeed = 100;
     [SerializeField, Range(0, 5)]
     int maxAirJumps = 0;
     [SerializeField, Range(0, 90)]
-    float maxGroundAngle = 25f;
+    float maxGroundAngle = 40f;
 
 
     Vector3 velocity, desiredVelocity;
@@ -154,6 +154,12 @@ public class MovingSphere : MonoBehaviour
         {
             return false;
         }
+        var speed = velocity.magnitude;
+        if (speed > maxSnapSpeed)
+        {
+            return false;
+        }
+
         if (!Physics.Raycast(body.position, Vector3.down, out var hit))
         {
             return false;
@@ -164,7 +170,6 @@ public class MovingSphere : MonoBehaviour
         }
         groundContactCount = 1;
         contactNormal = hit.normal;
-        var speed = velocity.magnitude;
         var dot = Vector3.Dot(velocity, hit.normal);
         if (dot > 0)
         {
