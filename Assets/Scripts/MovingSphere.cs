@@ -8,6 +8,7 @@ public class MovingSphere : MonoBehaviour
 
     Vector3 velocity, desiredVelocity;
     bool desiredJump;
+    bool onGround;
 
     Rigidbody body;
     void Awake()
@@ -40,10 +41,34 @@ public class MovingSphere : MonoBehaviour
         }
 
         body.linearVelocity = velocity;
+        onGround = false;
     }
 
     void Jump()
     {
-        velocity.y += Mathf.Sqrt(jumpHeight * -2 * Physics.gravity.y);
+        if (onGround)
+        {
+            velocity.y += Mathf.Sqrt(jumpHeight * -2 * Physics.gravity.y);
+        }
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        EvaluateCollision(collision);
+    }
+
+    void OnCollisionStay(Collision collision)
+    {
+        EvaluateCollision(collision);
+
+    }
+
+    void EvaluateCollision(Collision collision)
+    {
+        for (var i = 0; i < collision.contactCount; i++)
+        {
+            var normal = collision.GetContact(i).normal;
+            onGround = normal.y >= 0.9f;
+        }
     }
 }
