@@ -18,6 +18,7 @@ public class MovingSphere : MonoBehaviour
     int jumpPhase;
     float minGroundDotProduct;
     Vector3 contactNormal;
+    int stepsSinceLastGrounded;
 
     Rigidbody body;
 
@@ -41,6 +42,10 @@ public class MovingSphere : MonoBehaviour
         desiredVelocity = new Vector3(playerInput.x, 0, playerInput.y) * maxSpeed;
 
         desiredJump |= Input.GetButtonDown("Jump");
+
+        GetComponent<Renderer>().material.SetColor(
+            "_BaseColor", OnGround ? Color.black : Color.white
+        );
     }
 
     void FixedUpdate()
@@ -60,9 +65,11 @@ public class MovingSphere : MonoBehaviour
 
     void UpdateState()
     {
+        stepsSinceLastGrounded += 1;
         velocity = body.linearVelocity;
-        if (OnGround)
+        if (OnGround || SnapToGround())
         {
+            stepsSinceLastGrounded = 0;
             jumpPhase = 0;
             if (groundContactCount > 1)
             {
@@ -139,5 +146,30 @@ public class MovingSphere : MonoBehaviour
         var newZ = Mathf.MoveTowards(currentZ, desiredVelocity.z, maxSpeedChange);
 
         velocity += xAxis * (newX - currentX) + zAxis * (newZ - currentZ);
+    }
+
+    bool SnapToGround()
+    {
+        if (stepsSinceLastGrounded > 1)
+        {
+            return false;
+        }
+        if (!Physics.Raycast(body.position, Vector3.down, out var hit))
+        {
+            return false;
+        }
+        if (hit.normal.y < minGroundDotProduct)
+        {
+            return false;
+        }
+        groundContactCount = 1;
+        contactNormal = hit.normal;
+        var speed = velocity.magnitude;
+        var dot = Vector3.Dot(velocity, hit.normal);
+        if (dot > 0)
+        {
+            velocity = (velocity - hit.normal * dot).normalized * speed;
+        }
+        return true;
     }
 }
