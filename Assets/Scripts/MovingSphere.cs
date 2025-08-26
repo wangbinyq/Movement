@@ -22,7 +22,7 @@ public class MovingSphere : MonoBehaviour
     int jumpPhase;
     float minGroundDotProduct;
     Vector3 contactNormal;
-    int stepsSinceLastGrounded;
+    int stepsSinceLastGrounded, stepsSinceLastJump;
 
     Rigidbody body;
 
@@ -70,6 +70,7 @@ public class MovingSphere : MonoBehaviour
     void UpdateState()
     {
         stepsSinceLastGrounded += 1;
+        stepsSinceLastJump += 1;
         velocity = body.linearVelocity;
         if (OnGround || SnapToGround())
         {
@@ -96,6 +97,7 @@ public class MovingSphere : MonoBehaviour
     {
         if (OnGround || jumpPhase < maxAirJumps)
         {
+            stepsSinceLastJump = 0;
             jumpPhase += 1;
             float jumpSpeed = Mathf.Sqrt(-2f * Physics.gravity.y * jumpHeight);
             float alignedSpeed = Vector3.Dot(velocity, contactNormal);
@@ -154,7 +156,7 @@ public class MovingSphere : MonoBehaviour
 
     bool SnapToGround()
     {
-        if (stepsSinceLastGrounded > 1)
+        if (stepsSinceLastGrounded > 1 || stepsSinceLastJump <= 2)
         {
             return false;
         }
