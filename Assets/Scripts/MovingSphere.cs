@@ -45,10 +45,7 @@ public class MovingSphere : MonoBehaviour
     void FixedUpdate()
     {
         UpdateState();
-        float acceleration = onGround ? maxAcceleration : maxAirAcceleration;
-        var maxSpeedChange = acceleration * Time.fixedDeltaTime;
-        velocity.x = Mathf.MoveTowards(velocity.x, desiredVelocity.x, maxSpeedChange);
-        velocity.z = Mathf.MoveTowards(velocity.z, desiredVelocity.z, maxSpeedChange);
+        AdjustVelocity();
 
         if (desiredJump)
         {
@@ -110,5 +107,26 @@ public class MovingSphere : MonoBehaviour
                 contactNormal = normal;
             }
         }
+    }
+
+    Vector3 ProjectOnContactPlane(Vector3 vector)
+    {
+        return vector - contactNormal * Vector3.Dot(vector, contactNormal);
+    }
+
+    void AdjustVelocity()
+    {
+        var xAxis = ProjectOnContactPlane(Vector3.right).normalized;
+        var zAxis = ProjectOnContactPlane(Vector3.forward).normalized;
+
+        var currentX = Vector3.Dot(velocity, xAxis);
+        var currentZ = Vector3.Dot(velocity, zAxis);
+
+        var acceleration = onGround ? maxAcceleration : maxAirAcceleration;
+        var maxSpeedChange = acceleration * Time.deltaTime;
+        var newX = Mathf.MoveTowards(currentX, desiredVelocity.x, maxSpeedChange);
+        var newZ = Mathf.MoveTowards(currentZ, desiredVelocity.z, maxSpeedChange);
+
+        velocity += xAxis * (newX - currentX) + zAxis * (newZ - currentZ);
     }
 }
