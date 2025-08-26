@@ -5,7 +5,7 @@ public class MovingSphere : MonoBehaviour
     [SerializeField, Range(0, 100)]
     float maxSpeed = 10, maxAcceleration = 10;
     [SerializeField]
-    Rect allowedArea = new(-5, -5, 10, 10);
+    Rect allowedArea = new(-4.5f, -4.5f, 9, 9);
 
     Vector3 velocity;
     void Update()
@@ -23,7 +23,8 @@ public class MovingSphere : MonoBehaviour
         var newPosition = transform.localPosition + displacement;
         if (!allowedArea.Contains(new Vector2(newPosition.x, newPosition.z)))
         {
-            newPosition = transform.localPosition;
+            newPosition.x = Mathf.Clamp(newPosition.x, allowedArea.xMin, allowedArea.xMax);
+            newPosition.z = Mathf.Clamp(newPosition.z, allowedArea.yMin, allowedArea.yMax);
         }
         transform.localPosition = newPosition;
     }
