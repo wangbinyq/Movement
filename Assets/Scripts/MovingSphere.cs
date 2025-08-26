@@ -68,7 +68,7 @@ public class MovingSphere : MonoBehaviour
         for (var i = 0; i < collision.contactCount; i++)
         {
             var normal = collision.GetContact(i).normal;
-            onGround = normal.y >= 0.9f;
+            onGround |= normal.y >= 0.9f;
         }
     }
 }
