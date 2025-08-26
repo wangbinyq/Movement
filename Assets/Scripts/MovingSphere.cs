@@ -21,10 +21,15 @@ public class MovingSphere : MonoBehaviour
 
         var displacement = Time.deltaTime * velocity;
         var newPosition = transform.localPosition + displacement;
-        if (!allowedArea.Contains(new Vector2(newPosition.x, newPosition.z)))
+        if (newPosition.x < allowedArea.xMin || newPosition.x > allowedArea.xMax)
         {
             newPosition.x = Mathf.Clamp(newPosition.x, allowedArea.xMin, allowedArea.xMax);
+            velocity.x = -velocity.x;
+        }
+        if (newPosition.z < allowedArea.yMin || newPosition.z > allowedArea.yMax)
+        {
             newPosition.z = Mathf.Clamp(newPosition.z, allowedArea.yMin, allowedArea.yMax);
+            velocity.z = -velocity.z;
         }
         transform.localPosition = newPosition;
     }
