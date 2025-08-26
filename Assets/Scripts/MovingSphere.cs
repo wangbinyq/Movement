@@ -4,9 +4,10 @@ using UnityEngine;
 public class MovingSphere : MonoBehaviour
 {
     [SerializeField, Range(0, 100)]
-    float maxSpeed = 10, maxAcceleration = 10;
+    float maxSpeed = 10, maxAcceleration = 10, jumpHeight = 2;
 
     Vector3 velocity, desiredVelocity;
+    bool desiredJump;
 
     Rigidbody body;
     void Awake()
@@ -22,6 +23,7 @@ public class MovingSphere : MonoBehaviour
         playerInput = Vector2.ClampMagnitude(playerInput, 1);
         desiredVelocity = new Vector3(playerInput.x, 0, playerInput.y) * maxSpeed;
 
+        desiredJump |= Input.GetButtonDown("Jump");
     }
 
     void FixedUpdate()
@@ -31,6 +33,17 @@ public class MovingSphere : MonoBehaviour
         velocity.x = Mathf.MoveTowards(velocity.x, desiredVelocity.x, maxSpeedChange);
         velocity.z = Mathf.MoveTowards(velocity.z, desiredVelocity.z, maxSpeedChange);
 
+        if (desiredJump)
+        {
+            desiredJump = false;
+            Jump();
+        }
+
         body.linearVelocity = velocity;
+    }
+
+    void Jump()
+    {
+        velocity.y += Mathf.Sqrt(jumpHeight * -2 * Physics.gravity.y);
     }
 }
