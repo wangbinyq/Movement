@@ -21,7 +21,7 @@ public class MovingSphere : MonoBehaviour
     bool OnGround => groundContactCount > 0;
     int jumpPhase;
     float minGroundDotProduct, minStairsDotProduct;
-    Vector3 contactNormal;
+    Vector3 contactNormal, steep;
     int stepsSinceLastGrounded, stepsSinceLastJump;
 
     Rigidbody body;
