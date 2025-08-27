@@ -2996,6 +2996,12 @@ MonoBehaviour:
   focus: {fileID: 364166122}
   distance: 5
   focusRadius: 1
+  focusCentering: 0.5
+  rotationSpeed: 90
+  minVerticalAngle: -30
+  maxVerticalAngle: 60
+  alignDelay: 5
+  alignSmoothRange: 45
 --- !u!1 &355677482
 GameObject:
   m_ObjectHideFlags: 0
@@ -3606,6 +3612,7 @@ MonoBehaviour:
   stairsMask:
     serializedVersion: 2
     m_Bits: 4294967295
+  playerInputSpace: {fileID: 330585546}
 --- !u!96 &364166124
 TrailRenderer:
   serializedVersion: 3
