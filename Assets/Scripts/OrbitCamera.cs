@@ -23,6 +23,8 @@ public class OrbitCamera : MonoBehaviour
     Vector3 focusPoint, previousFocusPoint;
     Vector2 orbitAngles = new Vector2(45f, 0f);
     float lastManualRotationTime;
+    Camera regularCamera;
+
 
     void OnValidate()
     {
@@ -34,6 +36,7 @@ public class OrbitCamera : MonoBehaviour
 
     void Awake()
     {
+        regularCamera = GetComponent<Camera>();
         focusPoint = focus.position;
         transform.localRotation = Quaternion.Euler(orbitAngles);
     }
@@ -54,6 +57,14 @@ public class OrbitCamera : MonoBehaviour
         }
         Vector3 lookDirection = lookRotation * Vector3.forward;
         Vector3 lookPosition = focusPoint - lookDirection * distance;
+
+        if (Physics.Raycast(
+            focusPoint, -lookDirection, out RaycastHit hit, distance
+        ))
+        {
+            lookPosition = focusPoint - lookDirection * hit.distance;
+        }
+
         transform.SetPositionAndRotation(lookPosition, lookRotation);
     }
 
