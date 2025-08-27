@@ -11,19 +11,44 @@ public class OrbitCamera : MonoBehaviour
     float focusRadius = 1f;
     [SerializeField, Range(0f, 1f)]
     float focusCentering = 0.5f;
+    [SerializeField, Range(1f, 360f)]
+    float rotationSpeed = 90f;
+    [SerializeField, Range(-89f, 89f)]
+    float minVerticalAngle = -30f, maxVerticalAngle = 60f;
 
     Vector3 focusPoint;
+    Vector2 orbitAngles = new Vector2(45f, 0f);
+
+    void OnValidate()
+    {
+        if (maxVerticalAngle < minVerticalAngle)
+        {
+            maxVerticalAngle = minVerticalAngle;
+        }
+    }
 
     void Awake()
     {
         focusPoint = focus.position;
+        transform.localRotation = Quaternion.Euler(orbitAngles);
     }
 
     void LateUpdate()
     {
         UpdateFocusPoint();
-        Vector3 lookDirection = transform.forward;
-        transform.localPosition = focusPoint - lookDirection * distance;
+        Quaternion lookRotation;
+        if (ManualRotation())
+        {
+            ConstrainAngles();
+            lookRotation = Quaternion.Euler(orbitAngles);
+        }
+        else
+        {
+            lookRotation = transform.localRotation;
+        }
+        Vector3 lookDirection = lookRotation * Vector3.forward;
+        Vector3 lookPosition = focusPoint - lookDirection * distance;
+        transform.SetPositionAndRotation(lookPosition, lookRotation);
     }
 
     void UpdateFocusPoint()
@@ -46,6 +71,36 @@ public class OrbitCamera : MonoBehaviour
         else
         {
             focusPoint = targetPoint;
+        }
+    }
+
+    bool ManualRotation()
+    {
+        Vector2 input = new Vector2(
+            Input.GetAxis("Mouse Y"),
+            Input.GetAxis("Mouse X")
+        );
+        const float e = 0.001f;
+        if (input.x < -e || input.x > e || input.y < -e || input.y > e)
+        {
+            orbitAngles += rotationSpeed * Time.unscaledDeltaTime * input;
+            return true;
+        }
+        return false;
+    }
+
+    void ConstrainAngles()
+    {
+        orbitAngles.x =
+            Mathf.Clamp(orbitAngles.x, minVerticalAngle, maxVerticalAngle);
+
+        if (orbitAngles.y < 0f)
+        {
+            orbitAngles.y += 360f;
+        }
+        else if (orbitAngles.y >= 360f)
+        {
+            orbitAngles.y -= 360f;
         }
     }
 }
