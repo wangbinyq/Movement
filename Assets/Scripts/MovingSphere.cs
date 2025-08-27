@@ -8,11 +8,11 @@ public class MovingSphere : MonoBehaviour
     [SerializeField, Range(0, 5)]
     int maxAirJumps = 0;
     [SerializeField, Range(0, 90)]
-    float maxGroundAngle = 40f;
+    float maxGroundAngle = 40f, maxStairsAngle = 50f;
     [SerializeField, Min(0f)]
     float probeDistance = 1f;
     [SerializeField]
-    LayerMask probeMask = -1;
+    LayerMask probeMask = -1, stairsMask = -1;
 
 
     Vector3 velocity, desiredVelocity;
@@ -20,7 +20,7 @@ public class MovingSphere : MonoBehaviour
     int groundContactCount;
     bool OnGround => groundContactCount > 0;
     int jumpPhase;
-    float minGroundDotProduct;
+    float minGroundDotProduct, minStairsDotProduct;
     Vector3 contactNormal;
     int stepsSinceLastGrounded, stepsSinceLastJump;
 
@@ -29,6 +29,7 @@ public class MovingSphere : MonoBehaviour
     void OnValidate()
     {
         minGroundDotProduct = Mathf.Cos(maxGroundAngle * Mathf.Deg2Rad);
+        minStairsDotProduct = Mathf.Cos(maxStairsAngle * Mathf.Deg2Rad);
     }
 
     void Awake()
@@ -122,10 +123,11 @@ public class MovingSphere : MonoBehaviour
 
     void EvaluateCollision(Collision collision)
     {
+        var minDot = GetMinDot(collision.gameObject.layer);
         for (var i = 0; i < collision.contactCount; i++)
         {
             var normal = collision.GetContact(i).normal;
-            if (normal.y >= minGroundDotProduct)
+            if (normal.y >= minDot)
             {
                 groundContactCount += 1;
                 contactNormal += normal;
@@ -170,7 +172,7 @@ public class MovingSphere : MonoBehaviour
         {
             return false;
         }
-        if (hit.normal.y < minGroundDotProduct)
+        if (hit.normal.y < GetMinDot(hit.collider.gameObject.layer))
         {
             return false;
         }
@@ -182,5 +184,10 @@ public class MovingSphere : MonoBehaviour
             velocity = (velocity - hit.normal * dot).normalized * speed;
         }
         return true;
+    }
+
+    float GetMinDot(int layer)
+    {
+        return (stairsMask & (1 << layer)) == 0 ? minGroundDotProduct : minStairsDotProduct;
     }
 }
