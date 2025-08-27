@@ -17,11 +17,12 @@ public class MovingSphere : MonoBehaviour
 
     Vector3 velocity, desiredVelocity;
     bool desiredJump;
-    int groundContactCount;
+    Vector3 contactNormal, steepNormal;
+    int groundContactCount, steepContactCount;
     bool OnGround => groundContactCount > 0;
+    bool OnSteep => steepContactCount > 0;
     int jumpPhase;
     float minGroundDotProduct, minStairsDotProduct;
-    Vector3 contactNormal, steep;
     int stepsSinceLastGrounded, stepsSinceLastJump;
 
     Rigidbody body;
@@ -73,7 +74,7 @@ public class MovingSphere : MonoBehaviour
         stepsSinceLastGrounded += 1;
         stepsSinceLastJump += 1;
         velocity = body.linearVelocity;
-        if (OnGround || SnapToGround())
+        if (OnGround || SnapToGround() || CheckSteepContacts())
         {
             stepsSinceLastGrounded = 0;
             jumpPhase = 0;
@@ -90,8 +91,8 @@ public class MovingSphere : MonoBehaviour
 
     void ClearState()
     {
-        groundContactCount = 0;
-        contactNormal = Vector3.zero;
+        groundContactCount = steepContactCount = 0;
+        contactNormal = steepNormal = Vector3.zero;
     }
 
     void Jump()
@@ -131,6 +132,11 @@ public class MovingSphere : MonoBehaviour
             {
                 groundContactCount += 1;
                 contactNormal += normal;
+            }
+            else if (normal.y > -0.01)
+            {
+                steepContactCount += 1;
+                steepNormal += normal;
             }
         }
     }
@@ -184,6 +190,21 @@ public class MovingSphere : MonoBehaviour
             velocity = (velocity - hit.normal * dot).normalized * speed;
         }
         return true;
+    }
+
+    bool CheckSteepContacts()
+    {
+        if (steepContactCount > 1)
+        {
+            steepNormal.Normalize();
+            if (steepNormal.y >= minGroundDotProduct)
+            {
+                groundContactCount = 1;
+                contactNormal = steepNormal;
+                return true;
+            }
+        }
+        return false;
     }
 
     float GetMinDot(int layer)
