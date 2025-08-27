@@ -77,7 +77,10 @@ public class MovingSphere : MonoBehaviour
         if (OnGround || SnapToGround() || CheckSteepContacts())
         {
             stepsSinceLastGrounded = 0;
-            jumpPhase = 0;
+            if (stepsSinceLastJump > 1)
+            {
+                jumpPhase = 0;
+            }
             if (groundContactCount > 1)
             {
                 contactNormal.Normalize();
@@ -105,9 +108,14 @@ public class MovingSphere : MonoBehaviour
         else if (OnSteep)
         {
             jumpDirection = steepNormal;
+            jumpPhase = 0;
         }
-        else if (jumpPhase < maxAirJumps)
+        else if (maxAirJumps > 0 && jumpPhase <= maxAirJumps)
         {
+            if (jumpPhase == 0)
+            {
+                jumpPhase = 1;
+            }
             jumpDirection = contactNormal;
         }
         else
@@ -117,6 +125,7 @@ public class MovingSphere : MonoBehaviour
         stepsSinceLastJump = 0;
         jumpPhase += 1;
         float jumpSpeed = Mathf.Sqrt(-2f * Physics.gravity.y * jumpHeight);
+        jumpDirection = (jumpDirection + Vector3.up).normalized;
         float alignedSpeed = Vector3.Dot(velocity, jumpDirection);
         if (alignedSpeed > 0f)
         {
