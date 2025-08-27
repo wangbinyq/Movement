@@ -15,9 +15,12 @@ public class OrbitCamera : MonoBehaviour
     float rotationSpeed = 90f;
     [SerializeField, Range(-89f, 89f)]
     float minVerticalAngle = -30f, maxVerticalAngle = 60f;
+    [SerializeField, Min(0f)]
+    float alignDelay = 5f;
 
     Vector3 focusPoint;
     Vector2 orbitAngles = new Vector2(45f, 0f);
+    float lastManualRotationTime;
 
     void OnValidate()
     {
@@ -37,7 +40,7 @@ public class OrbitCamera : MonoBehaviour
     {
         UpdateFocusPoint();
         Quaternion lookRotation;
-        if (ManualRotation())
+        if (ManualRotation() || AutomaticRotation())
         {
             ConstrainAngles();
             lookRotation = Quaternion.Euler(orbitAngles);
@@ -84,9 +87,20 @@ public class OrbitCamera : MonoBehaviour
         if (input.x < -e || input.x > e || input.y < -e || input.y > e)
         {
             orbitAngles += rotationSpeed * Time.unscaledDeltaTime * input;
+            lastManualRotationTime = Time.unscaledTime;
             return true;
         }
         return false;
+    }
+
+    bool AutomaticRotation()
+    {
+        if (Time.unscaledTime - lastManualRotationTime < alignDelay)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     void ConstrainAngles()
